@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="static-title">NovaSeek 搜尋</title> 
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght=400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- V24 視覺優化變量 (保持 V23 樣式) --- */
+        :root {
+            --nova-blue: #185ADB; 
+            --nova-blue-hover: #1448A8;
+            --background-color: #f1f3f4; 
+            --content-bg-color: #ffffff; 
+            --border-color: #dadce0; 
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --text-link: #1a0dab;
+            --text-snippet: #4d5156;
+            
+            --content-padding-left: 175px; 
+            --desktop-max-width: 900px;
+            
+            --shadow-light: 0 1px 3px rgba(60,64,67,0.1), 0 1px 2px rgba(60,64,67,0.1);
+            --shadow-focus: 0 4px 10px rgba(60,64,67,0.15), 0 2px 4px rgba(60,64,67,0.1);
+        }
+
+        body { 
+            font-family: 'Inter', 'Noto Sans TC', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: var(--background-color); 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 0 20px; 
+        }
+        
+        .header { 
+            padding: 15px 0; 
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--content-bg-color);
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            max-width: var(--desktop-max-width); 
+            margin: 0; 
+        }
+
+        .logo {
+            font-size: 20px; 
+            font-weight: 700; 
+            color: var(--nova-blue); 
+            margin-right: 25px;
+            text-decoration: none; 
+            white-space: nowrap; 
+            flex-shrink: 0; 
+        }
+
+        .search-area {
+            display: flex;
+            align-items: center;
+            flex-grow: 1; 
+            max-width: 550px;
+        }
+        .search-form { 
+            display: flex; 
+            width: 100%; 
+            border: 1px solid var(--border-color);
+            border-radius: 24px; 
+            box-shadow: var(--shadow-light); 
+            transition: box-shadow 0.3s, border-color 0.3s;
+            background-color: var(--content-bg-color);
+        }
+        .search-form:hover, .search-form:focus-within {
+            box-shadow: var(--shadow-focus);
+            border-color: transparent;
+        }
+        #search-input { 
+            flex-grow: 1; 
+            padding: 10px 15px; 
+            border: none;
+            background: none;
+            font-size: 16px; 
+            outline: none; 
+        }
+        .mic-button {
+            background: none;
+            border: none;
+            padding: 10px 15px;
+            color: var(--text-secondary); 
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .mic-button:hover { 
+            color: var(--nova-blue); 
+            transform: scale(1.1); 
+        }
+        
+        /* V23: 國家選擇器樣式 */
+        #country-select {
+            appearance: none; 
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 10px;
+            margin-left: 10px;
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #country-select:hover {
+            border-color: var(--nova-blue);
+        }
+        #country-select:focus {
+            box-shadow: 0 0 0 2px rgba(24, 90, 219, 0.2);
+        }
+        
+        .auth-container {
+            flex-grow: 1; 
+            display: flex;
+            justify-content: flex-end;
+            margin-left: 20px;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        .auth-button {
+            padding: 8px 18px; 
+            background-color: var(--nova-blue);
+            border: none;
+            border-radius: 20px; 
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 4px rgba(24, 90, 219, 0.4); 
+        }
+        .auth-button:hover {
+            background-color: var(--nova-blue-hover);
+            box-shadow: 0 4px 8px rgba(24, 90, 219, 0.6);
+        }
+
+        .tabs-nav {
+            max-width: var(--desktop-max-width);
+            margin: 0; 
+            border-bottom: 1px solid var(--border-color);
+            padding-left: var(--content-padding-left); 
+            background-color: var(--content-bg-color);
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            position: relative;
+            transition: color 0.2s;
+        }
+        .tab-button.active {
+            color: var(--nova-blue);
+        }
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--nova-blue);
+            border-radius: 2px 2px 0 0; 
+        }
+        
+        .content-area {
+            max-width: var(--desktop-max-width); 
+            margin: 0; 
+            padding-top: 20px;
+        }
+        .results-container {
+            padding-left: var(--content-padding-left); 
+        }
+
+        /* Result Item Styling */
+        .result-item { 
+            background-color: var(--content-bg-color);
+            padding: 18px; 
+            margin-bottom: 15px; 
+            max-width: 650px; 
+            border: 1px solid #e8e8e8; 
+            border-radius: 12px; 
+            box-shadow: var(--shadow-light); 
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .result-item h3 { margin-top: 0; margin-bottom: 6px; font-size: 18px; font-weight: 500; }
+        .result-item h3 a { color: var(--text-link); text-decoration: none; transition: color 0.2s; }
+        .result-item h3 a:hover { text-decoration: underline; color: var(--nova-blue); }
+        .result-item .url { color: #006621; font-size: 13px; margin-bottom: 8px; display: block; font-weight: 400; }
+        .result-item p { color: var(--text-snippet); line-height: 1.5; font-size: 14px; margin-top: 0; }
+        
+        #status-message { 
+            padding-left: var(--content-padding-left); 
+            text-align: left; 
+            margin-top: 20px; 
+            margin-bottom: 20px;
+            font-size: 15px; 
+            color: var(--text-secondary);
+        }
+
+        /* Image Grid (10 圖分頁) */
+        .image-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 20px; 
+        }
+        .image-item { 
+            background-color: var(--content-bg-color);
+            border: 1px solid #e8e8e8;
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: var(--shadow-light);
+        }
+        .image-item img { 
+            width: 100%; 
+            height: 130px; 
+            object-fit: cover; 
+            background-color: #f0f0f0; 
+            display: block;
+        }
+
+        /* Pagination 保持樣式 */
+        #pagination { 
+            display: flex; 
+            justify-content: flex-start; 
+            margin-top: 40px; 
+            padding-left: var(--content-padding-left); 
+            align-items: center; 
+            padding-bottom: 50px;
+        }
+        .page-button { 
+            background: none; 
+            border: none; 
+            padding: 8px 12px; 
+            margin: 0 5px; 
+            cursor: pointer; 
+            font-size: 15px; 
+            font-weight: 500; 
+            color: var(--text-link); 
+            text-decoration: none; 
+            border-radius: 4px; 
+            transition: background-color 0.2s; 
+            line-height: 1; 
+            min-width: 30px; 
+            text-align: center; 
+            display: inline-block; 
+        }
+        .page-button.active { 
+            color: var(--nova-blue); 
+            font-weight: 700; 
+            position: relative; 
+        }
+        .page-button.active::after { 
+            content: ''; 
+            position: absolute; 
+            bottom: -5px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 70%; 
+            height: 3px; 
+            background-color: var(--nova-blue); 
+            border-radius: 2px; 
+        }
+        .page-button.disabled { opacity: 0.5; cursor: not-allowed; color: var(--text-secondary) !important; }
+
+        /* ************************************** */
+        /* Responsive Design */
+        /* ************************************** */
+        @media (max-width: 768px) {
+            :root { --content-padding-left: 0px; }
+            .header-content { flex-wrap: wrap; padding: 0 10px; align-items: center; padding-top: 5px; margin: 0; justify-content: flex-start; }
+            .logo { flex-basis: auto; margin: 0 10px 0 0; } 
+            .auth-container { order: 3; flex-basis: auto; margin-left: auto; justify-content: flex-end; padding-right: 0; }
+            .search-area { order: 4; width: 100%; flex-basis: 100%; margin-top: 10px; }
+            #country-select { margin-left: 0; margin-top: 10px; }
+            
+            .tabs-nav, .content-area, .results-container, #pagination { 
+                padding-left: 10px; 
+                padding-right: 10px; 
+                max-width: 100%; 
+                width: 100%; 
+                box-sizing: border-box; 
+            }
+            .image-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
+                gap: 10px; 
+            } 
+            .image-item img { height: 80px; }
+        }
+    </style>
+</head>
+<body>
+    
+<div class="header">
+    <div class="container header-content">
+        <a href="https://novaseek.org" class="logo">NovaSeek</a>
+        
+        <div class="search-area">
+            <form id="search-form" class="search-form" onsubmit="return false;">
+                <input type="text" id="search-input" placeholder="搜尋..." required>
+                <button type="button" class="mic-button" id="mic-button" title="Voice Input">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button type="submit" id="search-button" style="display:none;">Search</button>
+            </form>
+        </div>
+
+        <div class="auth-container">
+            <select id="country-select" title="搜尋地區">
+                <option value="" disabled>-- 選擇地區 --</option>
+                <option value="US" selected>美國 (預設)</option>
+                <option value="TW">台灣</option>
+                <option value="HK">香港</option>
+                <option value="CN">中國</option>
+                <option value="JP">日本</option>
+                <option value="KR">韓國</option>
+                <option value="GB">英國</option>
+            </select>
+            <a href="https://accounts.novaseek.org" class="auth-button">登入</a>
+        </div>
+    </div>
+</div>
+
+<div class="tabs-nav">
+    <button class="tab-button active" data-search-type="web">全部</button>
+    <button class="tab-button" data-search-type="image">圖片</button>
+</div>
+
+<div class="container content-area">
+    <div id="status-message">請在上方輸入關鍵字開始搜尋。</div>
+
+    <div class="results-container">
+        <div id="image-results-container" style="display:none;">
+            <div id="image-results" class="image-grid"></div>
+        </div>
+
+        <div id="results"></div>
+        
+        <div id="pagination"></div>
+    </div>
+</div>
+
+<script>
+    // --- Configuration ---
+    const GOOGLE_API_KEY = "AIzaSyAQTyeZh0uKfar3nb923hWgIuTYywSMnUw";
+    const GOOGLE_CX = "83e53df96e5124e3b";     
+    const RESULTS_PER_PAGE = 10; 
+    
+    // --- DOM Elements ---
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const staticTitle = document.getElementById('static-title');
+    const resultsDiv = document.getElementById('results');
+    const imageResultsContainer = document.getElementById('image-results-container');
+    const imageResultsDiv = document.getElementById('image-results');
+    const paginationDiv = document.getElementById('pagination');
+    const statusMessageDiv = document.getElementById('status-message');
+    const micButton = document.getElementById('mic-button');
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const countrySelect = document.getElementById('country-select'); 
+    
+    let currentQuery = '';
+    let currentPage = 1;
+    let totalResults = 0;
+    let currentTab = 'web'; 
+    let currentCountry = countrySelect.value || 'US'; 
+
+    // --- Event Listeners ---
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const newType = button.getAttribute('data-search-type');
+            if (newType === currentTab) return; 
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            currentTab = newType;
+            if (currentQuery) updateUrlAndSearch(currentQuery, 1); 
+        });
+    });
+    
+    countrySelect.addEventListener('change', (event) => {
+        currentCountry = event.target.value;
+        if (currentQuery) {
+            updateUrlAndSearch(currentQuery, 1); 
+        }
+    });
+
+    searchForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const query = searchInput.value.trim();
+        if (query) {
+            updateUrlAndSearch(query, 1); 
+        }
+    });
+
+    // --- Core API Fetch Function (V24 修正核心) ---
+    async function fetchApiData(query, start, searchType) {
+        const num = RESULTS_PER_PAGE; 
+        const glParam = currentCountry ? `&gl=${currentCountry}` : '';
+        
+        // V24 修正: 只有在 searchType 為 'image' 時，才將其加入 URL
+        let searchTypeParam = '';
+        if (searchType === 'image') {
+            searchTypeParam = `&searchType=image`;
+        }
+        
+        const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}&start=${start}&num=${num}${glParam}${searchTypeParam}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            // 由於用戶已經提供過錯誤訊息，這裡保持錯誤拋出
+            throw new Error(data.error ? data.error.message : `狀態碼 ${response.status}`);
+        }
+        return data;
+    }
+    
+    async function executeSearch(query, start) {
+        if (!query) return;
+
+        currentQuery = query;
+        currentPage = Math.floor((start - 1) / RESULTS_PER_PAGE) + 1; 
+
+        resultsDiv.innerHTML = '';
+        imageResultsDiv.innerHTML = '';
+        paginationDiv.innerHTML = '';
+        
+        statusMessageDiv.textContent = '搜尋中...';
+        staticTitle.textContent = `${query} - NovaSeek 搜尋 (${currentCountry})`; 
+
+        try {
+            const data = await fetchApiData(query, start, currentTab);
+            
+            if (currentTab === 'image') {
+                imageResultsContainer.style.display = 'grid'; 
+                resultsDiv.style.display = 'none';
+                renderImageResults(data);
+            } else {
+                imageResultsContainer.style.display = 'none';
+                resultsDiv.style.display = 'block';
+                renderWebResults(data);
+            }
+            
+        } catch (error) {
+            statusMessageDiv.textContent = `搜尋失敗：${error.message}。請檢查 API 設置。`;
+            console.error(error);
+        }
+    }
+
+    // --- Rendering Functions ---
+    function renderImageResults(data) {
+        imageResultsDiv.innerHTML = '';
+        statusMessageDiv.textContent = '';
+        
+        if (!data.items || data.items.length === 0) {
+            statusMessageDiv.textContent = `找不到與「${currentQuery}」相關的圖片。`;
+            totalResults = 0;
+            renderPagination();
+            return;
+        }
+
+        totalResults = data.searchInformation ? parseInt(data.searchInformation.totalResults.replace(/,/g, '')) : 0;
+        statusMessageDiv.textContent = `在 ${currentCountry} 找到約 ${data.searchInformation.formattedTotalResults} 項圖片結果。`;
+
+        data.items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'image-item';
+            // V21 修正: 點擊圖片導向出處網頁 (contextLink)
+            itemDiv.innerHTML = `
+                <a href="${item.image.contextLink}" target="_blank" title="${item.title}">
+                    <img src="${item.link}" alt="${item.title}" loading="lazy">
+                </a>
+            `;
+            imageResultsDiv.appendChild(itemDiv);
+        });
+
+        renderPagination(data); 
+    }
+
+    function renderWebResults(data) {
+        resultsDiv.innerHTML = '';
+        statusMessageDiv.textContent = '';
+        
+        if (!data.items || data.items.length === 0) {
+            statusMessageDiv.textContent = `找不到與「${currentQuery}」相關的網頁結果。`;
+            totalResults = 0;
+            renderPagination();
+            return;
+        }
+
+        totalResults = data.searchInformation ? parseInt(data.searchInformation.totalResults.replace(/,/g, '')) : 0;
+        statusMessageDiv.textContent = `在 ${currentCountry} 找到約 ${data.searchInformation.formattedTotalResults} 項網頁結果。`;
+
+        data.items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'result-item';
+            itemDiv.innerHTML = `
+                <h3><a href="${item.link}" target="_blank">${item.title}</a></h3>
+                <span class="url">${item.displayLink}</span>
+                <p>${item.snippet}</p>
+            `;
+            resultsDiv.appendChild(itemDiv);
+        });
+
+        renderPagination(data);
+    }
+    
+    // --- Pagination and URL Handling ---
+    function renderPagination(data) {
+        paginationDiv.innerHTML = '';
+        if (totalResults === 0) return;
+        
+        const step = RESULTS_PER_PAGE;
+        const maxPage = Math.min(10, Math.ceil(totalResults / step)); 
+        const maxDisplayPages = 5; 
+        
+        currentPage = Math.floor((parseInt(new URLSearchParams(window.location.search).get('start')) || 1 - 1) / step) + 1;
+        
+        let startPage = Math.max(1, currentPage - Math.floor(maxDisplayPages / 2));
+        let endPage = Math.min(maxPage, startPage + maxDisplayPages - 1);
+
+        if (endPage - startPage + 1 < maxDisplayPages) {
+            startPage = Math.max(1, endPage - maxDisplayPages + 1);
+        }
+
+        const prevButton = createPaginationButton('上一頁', currentPage > 1);
+        prevButton.onclick = () => { if (currentPage > 1) { updateUrlAndSearch(currentQuery, currentPage - 1); } };
+        if (currentPage === 1) prevButton.classList.add('disabled');
+        paginationDiv.appendChild(prevButton);
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = createPaginationButton(i, i !== currentPage);
+            pageButton.classList.add('number');
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            } else {
+                pageButton.onclick = () => updateUrlAndSearch(currentQuery, i);
+            }
+            paginationDiv.appendChild(pageButton);
+        }
+
+        const nextButton = createPaginationButton('下一頁', currentPage < maxPage);
+        nextButton.onclick = () => { if (currentPage < maxPage) { updateUrlAndSearch(currentQuery, currentPage + 1); } };
+        if (currentPage === maxPage) nextButton.classList.add('disabled');
+        paginationDiv.appendChild(nextButton);
+    }
+
+    function createPaginationButton(text, isEnabled) {
+        const button = document.createElement('a');
+        button.className = 'page-button';
+        button.textContent = text;
+        button.href = 'javascript:void(0);'; 
+        if (!isEnabled) { button.classList.add('disabled'); }
+        return button;
+    }
+
+    function updateUrlAndSearch(query, page, type = currentTab, country = currentCountry) {
+        const start = (page - 1) * RESULTS_PER_PAGE + 1;
+
+        const params = new URLSearchParams(window.location.search);
+        params.set('q', query);
+        params.set('start', start);
+        params.set('tab', type); 
+        params.set('gl', country); 
+
+        history.pushState(null, '', `?${params.toString()}`);
+        
+        executeSearch(query, start);
+        window.scrollTo(0, 0);
+    }
+
+    function initializeSearch() {
+        const params = new URLSearchParams(window.location.search);
+        const query = params.get('q');
+        const start = parseInt(params.get('start')) || 1;
+        const tab = params.get('tab') || 'web';
+        const country = params.get('gl') || 'US'; 
+
+        currentTab = tab;
+        currentCountry = country;
+        countrySelect.value = country; 
+        
+        tabButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-search-type') === tab) {
+                btn.classList.add('active');
+            }
+        });
+
+        if (query) {
+            searchInput.value = query;
+            executeSearch(query, start);
+        } else {
+            staticTitle.textContent = 'NovaSeek 搜尋';
+            if (tab === 'image') {
+                 imageResultsContainer.style.display = 'grid';
+                 resultsDiv.style.display = 'none';
+            } else {
+                 imageResultsContainer.style.display = 'none';
+                 resultsDiv.style.display = 'block';
+            }
+        }
+    }
+
+    // --- Speech Recognition (精簡版本) ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = 'zh-TW'; 
+
+        recognition.onstart = function() { micButton.classList.add('recording'); };
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            searchInput.value = transcript;
+            updateUrlAndSearch(transcript, 1); 
+        };
+        recognition.onend = function() { micButton.classList.remove('recording'); };
+
+        micButton.addEventListener('click', () => {
+            try { recognition.start(); } catch (error) { 
+                alert('語音輸入啟動失敗，請確保在 HTTPS 環境下並授予麥克風權限。');
+            }
+        });
+    } else {
+        micButton.style.display = 'none'; 
+    }
+
+    initializeSearch();
+    window.addEventListener('popstate', initializeSearch);
+
+</script>
+
+</body>
+</html>
